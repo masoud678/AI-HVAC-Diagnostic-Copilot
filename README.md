@@ -2,6 +2,10 @@
 
 An interactive demo that shows how AI and workflow automation can support HVAC service operations, troubleshooting, technician communication, and service data logging.
 
+## Live Demo
+
+[Open the live interactive demo](https://masoud678.github.io/AI-HVAC-Diagnostic-Copilot/)
+
 ## Live Workflow
 
 Service Request  
