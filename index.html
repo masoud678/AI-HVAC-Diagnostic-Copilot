@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI HVAC Diagnostic Copilot</title>
+<style>
+:root{--accent:#2A4EB5;--site:#011C68;--ink:#111827;--muted:#667085;--line:#d8deea;--orange:#ff7a00;--ok:#15845b}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--site);color:#fff}
+.hero{min-height:88vh;display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center;max-width:1180px;margin:auto;padding:80px 32px}
+.eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:850;color:#9eb5ff}
+h1{font-size:clamp(46px,6vw,76px);line-height:.98;letter-spacing:-.055em;margin:18px 0 24px}
+.lead{font-size:19px;line-height:1.65;color:#d8e1ff;max-width:700px}.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.pill{padding:10px 14px;border:1px solid rgba(255,255,255,.22);border-radius:999px;font-size:13px;font-weight:750;background:rgba(255,255,255,.07)}
+.arch{position:relative;height:430px;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,.25)}
+.arch svg{position:absolute;inset:0;width:100%;height:100%}.arch .mini{position:absolute;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:15px;padding:14px 16px;font-size:12px;font-weight:800;box-shadow:0 10px 28px rgba(16,19,26,.08)}
+.section{padding:100px 24px 120px}.wrap{max-width:1320px;margin:auto}.section h2{text-align:center;font-size:44px;letter-spacing:-.04em;margin:0 0 12px}.sub{text-align:center;color:#d8e1ff;font-size:17px;margin-bottom:42px}
+.demo-shell{background:#fff;border-radius:26px;box-shadow:0 32px 90px rgba(0,0,0,.32);overflow:hidden;color:var(--ink)}
+.stage{position:relative;height:720px;overflow:hidden;background:radial-gradient(circle at 52% 38%,#fff 0,#fbfcfe 52%,#f2f5fa 100%)}
+.wires{position:absolute;inset:0;width:100%;height:100%;z-index:1}.wire{fill:none;stroke:#c8cfdb;stroke-width:2.4}.flow{fill:none;stroke:var(--accent);stroke-width:3.2;stroke-linecap:round;stroke-dasharray:8 17;opacity:0}.flow.on{opacity:1;animation:dash 1s linear infinite}@keyframes dash{to{stroke-dashoffset:-50}}
+.node{position:absolute;z-index:3;width:190px;min-height:96px;padding:16px;border-radius:17px;background:#fff;border:1px solid var(--line);box-shadow:0 12px 34px rgba(24,32,60,.09);transition:.25s}
+.node.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,78,181,.10),0 16px 38px rgba(42,78,181,.17)}.node.done .status{color:var(--ok)}
+.icon{width:34px;height:34px;border-radius:10px;background:rgba(42,78,181,.10);color:var(--accent);display:grid;place-items:center;font-weight:900;margin-bottom:10px}.node b{font-size:14px}.status{font-size:11px;color:#8991a0;margin-top:6px}
+.ai-node{width:270px;min-height:190px;padding:22px;text-align:center;border-radius:24px;left:545px;top:238px}
+.ai-node .brain{width:84px;height:84px;margin:0 auto 13px;position:relative;display:grid;place-items:center;border-radius:50%;font-size:35px;background:#f7f8fa;border:1px solid #d9dee8;color:#98a1b2;transition:background .35s,border-color .35s,color .35s,box-shadow .35s,transform .35s}
+.ai-node .brain:before{content:"";position:absolute;inset:-8px;border:7px solid #e5e8ee;border-top-color:#cfd5df;border-right-color:#cfd5df;border-radius:50%;opacity:.55;transition:opacity .3s,border-color .3s;animation:none}.ai-node.active .brain{background:#fff7ef;border-color:#ffd8b5;color:var(--orange);box-shadow:0 0 0 8px rgba(255,122,0,.08),0 0 34px rgba(255,122,0,.34);animation:brainPulse 1.35s ease-in-out infinite}.ai-node.active .brain:before{opacity:1;border-color:#ffe0c4;border-top-color:var(--orange);border-right-color:var(--orange);animation:spin 1s linear infinite}@keyframes brainPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 8px rgba(255,122,0,.08),0 0 28px rgba(255,122,0,.24)}50%{transform:scale(1.045);box-shadow:0 0 0 12px rgba(255,122,0,.06),0 0 42px rgba(255,122,0,.42)}}
+.ai-node b{font-size:17px}.ai-node .status{font-size:12px;margin-top:9px}.ai-node.active{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,122,0,.10),0 22px 55px rgba(255,122,0,.18)}
+@keyframes spin{to{transform:rotate(360deg)}}.form-card{position:absolute;z-index:4;left:62px;top:205px;width:245px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 14px 38px rgba(24,32,60,.10)}
+.form-card h3{font-size:14px;margin:0 0 11px}.field{margin:7px 0}.field label{display:block;font-size:9px;font-weight:850;color:#7b8494;margin-bottom:4px;text-transform:uppercase}.fake-input{height:29px;border:1px solid #e1e5ed;border-radius:8px;padding:7px 9px;font-size:10.5px;background:#fbfcfe;white-space:nowrap;overflow:hidden}.submit{margin-top:10px;width:100%;height:34px;border:0;border-radius:9px;background:var(--accent);color:#fff;font-weight:850;font-size:11px}
+.pop{position:absolute;z-index:6;background:#fff;border:1px solid var(--line);box-shadow:0 18px 50px rgba(24,32,60,.14);border-radius:15px;padding:13px;opacity:0;transform:translateY(8px) scale(.98);transition:.3s;pointer-events:none}.show{opacity:1;transform:none}.pop-title{font-size:10.5px;font-weight:900;margin-bottom:7px}.pop-body{font-size:10px;line-height:1.48;color:#4e5665}
+.email-pop{left:92px;top:38px;width:255px}.analysis-pop{left:510px;top:445px;width:260px}.dispatch-pop{right:18px;top:65px;width:250px}.tech-pop{right:18px;top:390px;width:250px}.sheet-pop{left:805px;bottom:20px;width:390px}
+.cause{display:flex;justify-content:space-between;border-top:1px solid #eef0f5;padding:5px 0}.cause:first-child{border-top:0}.bar{height:5px;background:#e8ebf2;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.sheet-row{display:grid;grid-template-columns:1.1fr 1fr 1.2fr .8fr;gap:6px;font-size:9px}.sheet-row span{padding:6px;background:#f5f7fa;border-radius:5px}
+.controls{display:flex;align-items:center;gap:14px;padding:18px 20px;border-top:1px solid var(--line)}.ctrl{border:1px solid var(--line);background:#fff;border-radius:9px;height:36px;min-width:38px;padding:0 11px;cursor:pointer;font-weight:800}.ctrl.primary{background:var(--accent);color:#fff;border-color:var(--accent);width:62px;height:48px;border-radius:14px;font-size:20px;box-shadow:0 8px 22px rgba(42,78,181,.25)}#scrub{flex:1;accent-color:var(--accent)}.time{font-variant-numeric:tabular-nums;font-size:12px;color:#697181;min-width:82px;text-align:right}.legend{padding:0 20px 18px;font-size:11px;color:#858d9b}
+
+
+.camera-layer{position:absolute;inset:0;width:100%;height:100%;transform-origin:0 0;will-change:transform;transition:none}
+.stage{isolation:isolate}
+
+.editor-toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:#f8f9fc;position:relative;z-index:20}
+.mode-btn,.save-btn,.reset-btn{height:36px;padding:0 14px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#343a46;font-weight:800;cursor:pointer}
+.mode-btn.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+.editor-note{font-size:11px;color:#7c8595;margin-left:auto}
+.stage.editing .node,.stage.editing .form-card{cursor:move;user-select:none}
+.stage.editing .node:hover,.stage.editing .form-card:hover{outline:2px dashed var(--accent);outline-offset:4px}
+.resize-handle{display:none;position:absolute;width:14px;height:14px;right:-7px;bottom:-7px;border-radius:4px;background:var(--accent);border:2px solid #fff;cursor:nwse-resize;z-index:10}
+.stage.editing .resize-handle{display:block}
+.login-view{min-height:100vh;display:grid;place-items:center;padding:32px;background:radial-gradient(circle at 15% 15%,#123b9c 0,#011c68 42%,#00123f 100%)}
+.login-panel{width:min(100%,430px);padding:42px;background:#fff;color:var(--ink);border-radius:24px;box-shadow:0 28px 80px rgba(0,0,0,.3)}
+.login-mark{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--accent);color:#fff;font-weight:900;margin-bottom:24px}.login-panel h2{font-size:32px;letter-spacing:-.04em;margin:0 0 8px}.login-panel p{color:var(--muted);line-height:1.5;margin:0 0 28px}.login-field{display:block;margin:16px 0}.login-field span{display:block;font-size:12px;font-weight:800;color:#4f596b;margin-bottom:7px}.login-field input{width:100%;height:44px;padding:0 13px;border:1px solid var(--line);border-radius:9px;font:inherit;color:var(--ink);outline:none}.login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,78,181,.12)}.login-submit{width:100%;height:46px;margin-top:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:850;cursor:pointer}.login-submit:hover{background:#1f3d96}.login-error{min-height:18px;color:#b42318;font-size:12px;margin:10px 0 0}.login-helper{font-size:11px!important;color:#8991a0!important;margin:18px 0 0!important}
+body.login-mode> :not(.login-view){display:none}.login-view[hidden]{display:none}
+
+@media(max-width:900px){.hero{grid-template-columns:1fr}.stage,.controls,.legend{min-width:1280px}.demo-shell{overflow-x:auto}}
+
+/* Simplified presentation: title header + animation only */
+.project-header{
+  background:var(--site);
+  max-width:1320px;
+  margin:0 auto;
+  padding:34px 24px 26px;
+  text-align:left;
+}
+.project-header h1{
+  font-size:clamp(34px,4.5vw,58px);
+  line-height:1;
+  letter-spacing:-.045em;
+  margin:10px 0 0;
+}
+.animation-only{padding:0 24px 42px}
+.animation-only .wrap{max-width:1320px}
+@media(max-width:900px){
+  .project-header{padding:26px 18px 20px}
+  .animation-only{padding:0 12px 28px}
+}
+
+</style>
+</head>
+<body>
+<section class="login-view" id="loginView" hidden>
+  <form class="login-panel" id="loginForm">
+    <div class="login-mark">HV</div>
+    <h2>Welcome back</h2>
+    <p>Sign in to open your AI HVAC Diagnostic Copilot workspace.</p>
+    <label class="login-field"><span>Email address</span><input id="loginEmail" type="email" autocomplete="email" placeholder="you@company.com" required></label>
+    <label class="login-field"><span>Password</span><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required></label>
+    <button class="login-submit" type="submit">Sign in</button>
+    <div class="login-error" id="loginError" role="status" aria-live="polite"></div>
+    <p class="login-helper">Demo access: any valid email and password.</p>
+  </form>
+</section>
+<section class="project-header">
+  <div class="eyebrow">AI + HVAC SERVICE INTELLIGENCE</div>
+  <h1>AI HVAC Diagnostic Copilot</h1>
+</section>
+<section class="section animation-only"><div class="wrap">
+<div class="demo-shell">
+<div class="editor-toolbar">
+  <button class="mode-btn selected" id="demoMode">DEMO MODE</button>
+  <button class="mode-btn" id="editMode">EDIT MODE</button>
+  <button class="save-btn" id="saveLayout">Save Layout</button>
+  <button class="reset-btn" id="resetLayout">Reset Layout</button>
+  <span class="editor-note" id="editorNote">DEMO ready · scroll into view or press Play</span>
+</div>
+<div class="stage" id="stage"><div class="camera-layer" id="camera">
+<svg class="wires" viewBox="0 0 1280 720" preserveAspectRatio="none">
+<path d="M307 370 C325 370 325 330 330 330" class="wire"/><path id="f1" d="M307 370 C325 370 325 330 330 330" class="flow"/>
+<path d="M425 282 C425 210 475 190 475 150" class="wire"/><path id="f2" d="M425 282 C425 210 475 190 475 150" class="flow"/>
+<path d="M520 330 C535 330 530 330 545 330" class="wire"/><path id="f3" d="M520 330 C535 330 530 330 545 330" class="flow"/>
+<path d="M815 300 C885 300 895 145 1010 145" class="wire"/><path id="f4" d="M815 300 C885 300 895 145 1010 145" class="flow"/>
+<path d="M815 350 C890 350 905 465 1010 465" class="wire"/><path id="f5" d="M815 350 C890 350 905 465 1010 465" class="flow"/>
+<path d="M740 428 C740 535 845 565 900 595" class="wire"/><path id="f6" d="M740 428 C740 535 845 565 900 595" class="flow"/>
+</svg>
+<div class="form-card"><h3>HVAC Service Request</h3><div class="field"><label>Customer</label><div class="fake-input" id="name"></div></div><div class="field"><label>Equipment</label><div class="fake-input" id="equipment"></div></div><div class="field"><label>Problem</label><div class="fake-input" id="problem"></div></div><div class="field"><label>Location</label><div class="fake-input" id="location"></div></div><div class="field"><label>Preferred time</label><div class="fake-input" id="appt"></div></div><button class="submit" id="submitBtn">Submit Request</button><span class="resize-handle"></span></div>
+<div class="node" id="intake" style="left:330px;top:282px"><div class="icon">IN</div><b>Request Intake</b><div class="status">Waiting for request</div><span class="resize-handle"></span></div>
+<div class="node" id="email" style="left:380px;top:58px"><div class="icon">✉</div><b>Customer Email</b><div class="status">Acknowledgement</div><span class="resize-handle"></span></div>
+<div class="node ai-node" id="ai"><div class="brain">⌁</div><b>AI Diagnostic Agent</b><div class="status">Central reasoning & workflow intelligence</div><span class="resize-handle"></span></div>
+<div class="node" id="dispatcher" style="right:80px;top:98px"><div class="icon">TG</div><b>Dispatcher</b><div class="status">Telegram + AI analysis</div><span class="resize-handle"></span></div>
+<div class="node" id="technician" style="right:80px;top:418px"><div class="icon">TG</div><b>Technician</b><div class="status">Location + service time</div><span class="resize-handle"></span></div>
+<div class="node" id="sheets" style="left:805px;bottom:72px"><div class="icon">GS</div><b>Company Google Sheet</b><div class="status">Customer service record</div><span class="resize-handle"></span></div>
+<div class="pop email-pop" id="emailPop"><div class="pop-title">CUSTOMER EMAIL · SENT</div><div class="pop-body"><b>Service Request Received</b><br>Hi John, we've received your HVAC service request. Our team is reviewing it now.</div></div>
+<div class="pop analysis-pop" id="analysisPop"><div class="pop-title">AI INITIAL ANALYSIS</div><div class="pop-body"><div class="cause"><span>Airflow restriction</span><b>65%</b></div><div class="bar"><i style="width:65%"></i></div><div class="cause"><span>Refrigerant issue</span><b>25%</b></div><div class="bar"><i style="width:25%"></i></div><div class="cause"><span>Control / sensor</span><b>10%</b></div><div class="bar"><i style="width:10%"></i></div></div></div>
+<div class="pop dispatch-pop" id="dispatchPop"><div class="pop-title">TELEGRAM · DISPATCHER</div><div class="pop-body">🔔 <b>New Service Request</b><br>Heat Pump — Short Cycling<br><br><b>AI Initial Analysis</b><br>Airflow restriction — 65%<br>Refrigerant issue — 25%<br>Control/sensor — 10%<br><br>Priority: HIGH</div></div>
+<div class="pop tech-pop" id="techPop"><div class="pop-title">TELEGRAM · TECHNICIAN</div><div class="pop-body">🛠 <b>New Job Assigned</b><br>John Smith<br>Heat Pump — Short Cycling<br>📍 Vancouver, BC<br>🕐 Today — 2:30 PM</div></div>
+<div class="pop sheet-pop" id="sheetPop"><div class="pop-title">GOOGLE SHEETS · NEW SERVICE RECORD</div><div class="sheet-row"><span>John Smith</span><span>Heat Pump</span><span>Short Cycling</span><span>HIGH</span></div></div>
+</div></div>
+<div class="controls"><button class="ctrl" id="back">−5s</button><button class="ctrl primary" id="play">▶</button><button class="ctrl" id="forward">+5s</button><input id="scrub" type="range" min="0" max="45000" value="0" step="50"><div class="time" id="time">00:00 / 00:45</div><button class="ctrl" id="replay">↻</button></div><div class="legend">Simulated demo data · Confidence values are illustrative and are not a definitive diagnosis.</div>
+</div></div></section>
+<script>
+const D=45000;let t=0,playing=false,last=0,autoStarted=false,editModeOn=false;const $=id=>document.getElementById(id),scrub=$('scrub'),play=$('play');
+const camera=$('camera');
+const loginView=$('loginView'),loginForm=$('loginForm');
+function updateRoute(){
+  const onLogin=location.pathname.replace(/\/$/,'').endsWith('/login')||new URLSearchParams(location.search).has('login');
+  document.body.classList.toggle('login-mode',onLogin);
+  loginView.hidden=!onLogin;
+}
+updateRoute();
+loginForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(!loginForm.reportValidity())return;
+  history.pushState({},'',location.pathname.replace(/\/?login$/,'/')||'/');
+  updateRoute();
+  $('loginError').textContent='';
+});
+window.addEventListener('popstate',updateRoute);
+function typeText(el,text,p,a,b){let n=Math.max(0,Math.min(text.length,Math.floor((p-a)/(b-a)*text.length)));el.textContent=text.slice(0,n)}
+function active(id,on,status,done=false){let e=$(id);e.classList.toggle('active',on);e.classList.toggle('done',done);if(status)e.querySelector('.status').innerHTML=status}
+function flow(id,on){$(id).classList.toggle('on',on)}function show(id,on){$(id).classList.toggle('show',on)}
+function lerp(a,b,p){return a+(b-a)*p}
+function ease(p){p=Math.max(0,Math.min(1,p));return p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2}
+function camBetween(ms,a,b,from,to){
+  let p=ease((ms-a)/(b-a)); return {x:lerp(from.x,to.x,p),y:lerp(from.y,to.y,p),s:lerp(from.s,to.s,p)}
+}
+function cameraState(ms){
+  const wide={x:0,y:0,s:1};
+  const form={x:-70,y:-245,s:1.5};
+  const email={x:-120,y:-35,s:1.62};
+  const ai={x:-390,y:-100,s:1.5};
+  const outputs={x:-455,y:-45,s:1.16};
+  const dispatch={x:-455,y:-55,s:1.12};
+  const tech={x:-455,y:-60,s:1.12};
+  const sheet={x:-455,y:-430,s:1.16};
+  if(ms<1500)return wide;
+  if(ms<3500)return camBetween(ms,1500,3500,wide,form);
+  if(ms<10500)return form;
+  if(ms<12000)return camBetween(ms,10500,12000,form,wide);
+  if(ms<13500)return wide;
+  if(ms<15000)return camBetween(ms,13500,15000,wide,email);
+  if(ms<18500)return email;
+  if(ms<20000)return camBetween(ms,18500,20000,email,wide);
+  if(ms<21500)return camBetween(ms,20000,21500,wide,ai);
+  if(ms<29000)return ai;
+  if(ms<30500)return camBetween(ms,29000,30500,ai,outputs);
+  if(ms<32500)return outputs;
+  if(ms<34000)return camBetween(ms,32500,34000,outputs,dispatch);
+  if(ms<36000)return dispatch;
+  if(ms<37200)return camBetween(ms,36000,37200,dispatch,tech);
+  if(ms<39200)return tech;
+  if(ms<40400)return camBetween(ms,39200,40400,tech,sheet);
+  if(ms<42500)return sheet;
+  return camBetween(ms,42500,45000,sheet,wide);
+}
+function applyCamera(ms){
+  if(editModeOn){camera.style.transform='translate(0px,0px) scale(1)';return}
+  const c=cameraState(ms);camera.style.transform=`translate(${c.x}px,${c.y}px) scale(${c.s})`;
+}
+function render(ms){
+  t=Math.max(0,Math.min(D,ms));scrub.value=t;
+  typeText($('name'),'John Smith',t,3300,4700);
+  typeText($('equipment'),'Heat Pump',t,4700,5900);
+  typeText($('problem'),'Starts, then stops after 3 minutes',t,5900,7600);
+  typeText($('location'),'Vancouver, BC',t,7600,8800);
+  typeText($('appt'),'Today — 2:30 PM',t,8800,9900);
+  $('submitBtn').textContent=t>10200?'Request Submitted ✓':'Submit Request';
+
+  flow('f1',t>=10200&&t<13200);
+  active('intake',t>=11300&&t<14200,t<13000?'Receiving request...':'Request structured ✓',t>=13000);
+
+  flow('f2',t>=13000&&t<16000);
+  active('email',t>=14300&&t<19000,t<16000?'Sending acknowledgement...':'Customer notified ✓',t>=16000);
+  show('emailPop',t>=15800&&t<20500);
+
+  flow('f3',t>=13000&&t<22000);
+  active('ai',t>=20200&&t<30500,t<27800?'Analyzing symptoms & service context...':'Initial analysis complete ✓',t>=27800);
+  show('analysisPop',t>=27500);
+
+  flow('f4',t>=29500&&t<35000);
+  active('dispatcher',t>=32000&&t<36500,t<34300?'Receiving AI analysis...':'Dispatcher alerted ✓',t>=34300);
+  show('dispatchPop',t>=34200);
+
+  flow('f5',t>=31500&&t<39000);
+  active('technician',t>=35500&&t<40000,t<38000?'Sending assignment...':'Technician notified ✓',t>=38000);
+  show('techPop',t>=37800);
+
+  flow('f6',t>=31000&&t<42000);
+  active('sheets',t>=39000&&t<43500,t<41400?'Writing service record...':'Customer record saved ✓',t>=41400);
+  show('sheetPop',t>=41200);
+
+  applyCamera(t);
+  let s=Math.floor(t/1000);$('time').textContent=`00:${String(s).padStart(2,'0')} / 00:45`;
+}
+function tick(ts){
+  if(!playing)return;
+  if(!last)last=ts;
+
+  let d=ts-last;
+  last=ts;
+
+  // First 9 seconds of the animation timeline run at 2x speed.
+  // After that, playback returns to normal speed.
+  if(t < 9000){
+    const realMsToNineSeconds=(9000-t)/2;
+
+    if(d <= realMsToNineSeconds){
+      render(t + d*2);
+    }else{
+      render(9000 + (d-realMsToNineSeconds));
+    }
+  }else{
+    render(t+d);
+  }
+
+  if(t>=D){
+    playing=false;
+    play.textContent='▶';
+    return;
+  }
+
+  requestAnimationFrame(tick);
+}
+function setPlay(v){
+  if(v && t>=D) render(0);
+  playing=v;
+  play.textContent=v?'❚❚':'▶';
+  last=0;
+  if(v) requestAnimationFrame(tick);
+}
+play.addEventListener('click',()=>setPlay(!playing));
+$('back').addEventListener('click',()=>render(t-5000));
+$('forward').addEventListener('click',()=>render(t+5000));
+$('replay').addEventListener('click',()=>{render(0);setPlay(true)});
+scrub.addEventListener('input',()=>{setPlay(false);render(+scrub.value)});
+render(0);
+
+// Start automatically as soon as the user scrolls the demo into view.
+function tryAutoStart(){
+  if(autoStarted || editModeOn) return;
+  const r=$('stage').getBoundingClientRect();
+  const visible = r.top < window.innerHeight * .98 && r.bottom > 0;
+  if(visible){
+    autoStarted=true;
+    setPlay(true);
+  }
+}
+window.addEventListener('scroll',tryAutoStart,{passive:true});
+window.addEventListener('wheel',tryAutoStart,{passive:true});
+window.addEventListener('touchmove',tryAutoStart,{passive:true});
+setTimeout(tryAutoStart,100);
+const autoObserver=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting && !autoStarted && !editModeOn){
+      autoStarted=true;
+      setPlay(true);
+    }
+  });
+},{threshold:0.05});
+autoObserver.observe($('stage'));
+
+// ---- Visual Layout Editor ----
+const stageEl = $('stage');
+const editableIds = ['intake','email','ai','dispatcher','technician','sheets'];
+const formEl = document.querySelector('.form-card');
+const editableEls = [formEl, ...editableIds.map(id=>$(id))];
+let dragState=null, resizeState=null;
+
+// ---- Precision Connection System ----
+// Fixed ports: every wire terminates exactly on the intended node edge.
+const connectionMap = [
+  {from:formEl,       fromSide:'right',  to:$('intake'),     toSide:'left',   fid:'f1'},
+  {from:$('intake'),  fromSide:'top',    to:$('email'),      toSide:'bottom', fid:'f2'},
+  {from:$('intake'),  fromSide:'right',  to:$('ai'),         toSide:'left',   fid:'f3'},
+  {from:$('ai'),      fromSide:'right',  to:$('dispatcher'), toSide:'left',   fid:'f4'},
+  {from:$('ai'),      fromSide:'right',  to:$('technician'), toSide:'left',   fid:'f5'},
+  {from:$('ai'),      fromSide:'bottom', to:$('sheets'),     toSide:'top',    fid:'f6'}
+];
+
+function localBox(el){
+  // offsetLeft/Top are in the same untransformed coordinate system as the camera layer.
+  return {x:el.offsetLeft,y:el.offsetTop,w:el.offsetWidth,h:el.offsetHeight};
+}
+
+function port(el,side){
+  const r=localBox(el);
+  if(side==='left')   return {x:r.x,       y:r.y+r.h/2, side};
+  if(side==='right')  return {x:r.x+r.w,   y:r.y+r.h/2, side};
+  if(side==='top')    return {x:r.x+r.w/2, y:r.y,       side};
+  return                    {x:r.x+r.w/2, y:r.y+r.h,   side};
+}
+
+function controlPoint(p, distance){
+  if(p.side==='right') return {x:p.x+distance,y:p.y};
+  if(p.side==='left')  return {x:p.x-distance,y:p.y};
+  if(p.side==='bottom')return {x:p.x,y:p.y+distance};
+  return {x:p.x,y:p.y-distance};
+}
+
+function precisionPath(from,fromSide,to,toSide){
+  const a=port(from,fromSide), b=port(to,toSide);
+  const gap=Math.hypot(b.x-a.x,b.y-a.y);
+  const handle=Math.max(38,Math.min(150,gap*.38));
+  const c1=controlPoint(a,handle);
+  const c2=controlPoint(b,handle);
+  return `M ${a.x} ${a.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${b.x} ${b.y}`;
+}
+
+function updateWires(){
+  const svg=document.querySelector('.wires');
+  // Critical: SVG coordinates now exactly match the camera/node coordinate system.
+  svg.setAttribute('viewBox',`0 0 ${camera.clientWidth} ${camera.clientHeight}`);
+
+  connectionMap.forEach(({from,fromSide,to,toSide,fid})=>{
+    const d=precisionPath(from,fromSide,to,toSide);
+    const flowPath=$(fid);
+    flowPath.setAttribute('d',d);
+
+    const base=flowPath.previousElementSibling;
+    if(base && base.classList.contains('wire')) base.setAttribute('d',d);
+  });
+}
+
+function saveLayout(){
+  const data={};
+  editableEls.forEach((el,i)=>{
+    const key=i===0?'form':editableIds[i-1];
+    data[key]={left:el.offsetLeft,top:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight};
+  });
+  localStorage.setItem('hvacCopilotLayout',JSON.stringify(data));
+  $('editorNote').textContent='Layout saved in this browser ✓';
+}
+function loadLayout(){
+  const raw=localStorage.getItem('hvacCopilotLayout'); if(!raw){updateWires();return}
+  try{
+    const data=JSON.parse(raw);
+    editableEls.forEach((el,i)=>{
+      const key=i===0?'form':editableIds[i-1], v=data[key]; if(!v)return;
+      el.style.left=v.left+'px'; el.style.top=v.top+'px'; el.style.width=v.width+'px';
+      if(key!=='form') el.style.minHeight=v.height+'px';
+    });
+  }catch(e){}
+  updateWires();
+}
+function setEditorMode(on){
+  editModeOn=on;
+  camera.style.transform='translate(0px,0px) scale(1)'; stageEl.classList.toggle('editing',on);
+  $('editMode').classList.toggle('selected',on); $('demoMode').classList.toggle('selected',!on);
+  $('editorNote').textContent=on?'Drag nodes with the mouse · Resize from the blue corner · wires follow automatically':'Animation mode · layout locked';
+  if(on){setPlay(false)} updateWires();
+}
+$('editMode').onclick=()=>setEditorMode(true);
+$('demoMode').onclick=()=>{setEditorMode(false); if(t>=D) render(0); setPlay(true);};
+$('saveLayout').onclick=saveLayout;
+$('resetLayout').onclick=()=>{localStorage.removeItem('hvacCopilotLayout');location.reload()};
+
+editableEls.forEach(el=>{
+  el.addEventListener('pointerdown',e=>{
+    if(!editModeOn || e.target.classList.contains('resize-handle'))return;
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    dragState={el,x:e.clientX,y:e.clientY,left:el.offsetLeft,top:el.offsetTop};
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!dragState || dragState.el!==el)return;
+    let nl=dragState.left+(e.clientX-dragState.x), nt=dragState.top+(e.clientY-dragState.y);
+    nl=Math.max(0,Math.min(stageEl.clientWidth-el.offsetWidth,nl));
+    nt=Math.max(0,Math.min(stageEl.clientHeight-el.offsetHeight,nt));
+    el.style.left=nl+'px';el.style.top=nt+'px';updateWires();
+  });
+  el.addEventListener('pointerup',()=>dragState=null);
+  const h=el.querySelector('.resize-handle');
+  if(h){
+    h.addEventListener('pointerdown',e=>{
+      if(!editModeOn)return;e.stopPropagation();e.preventDefault();h.setPointerCapture(e.pointerId);
+      resizeState={el,x:e.clientX,y:e.clientY,w:el.offsetWidth,h:el.offsetHeight};
+    });
+    h.addEventListener('pointermove',e=>{
+      if(!resizeState || resizeState.el!==el)return;
+      el.style.width=Math.max(150,resizeState.w+(e.clientX-resizeState.x))+'px';
+      el.style.minHeight=Math.max(80,resizeState.h+(e.clientY-resizeState.y))+'px';updateWires();
+    });
+    h.addEventListener('pointerup',()=>resizeState=null);
+  }
+});
+window.addEventListener('resize',updateWires);
+setTimeout(loadLayout,50);
+setTimeout(updateWires,180);
+setTimeout(updateWires,500);
+
+</script></body></html>
